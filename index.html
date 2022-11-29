@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="description" content="Webpage description goes here" />
+  <meta charset="utf-8">
+  <title>Convert string to Piet image</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="">
+  <!-- <link rel="stylesheet" href="css/style.css">
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
+</head>
+
+<body>
+    <p>
+        <textarea id="input" type="text" oninput="createPietImage(this.value)" placeholder="Text to convert to Piet image"></textarea>
+    </p>
+    <p>
+        <canvas id="canvas" style="border:1px solid #000000;"></canvas>
+    </p>
+</body>
+</html>
+
+
+<script>
+
+var black = "#000000";
+var white = "#FFFFFF";
+
+var colours = 
+[
+    ["#FFC0C0", "#FF0000", "#C00000"],
+    ["#FFFFC0", "#FFFF00", "#C0C000"],
+    ["#C0FFC0", "#00FF00", "#00C000"],
+    ["#C0FFFF", "#00FFFF", "#00C0C0"],
+    ["#C0C0FF", "#0000FF", "#0000C0"],
+    ["#FFC0FF", "#FF00FF", "#C000C0"]
+];
+
+var push = [0, 1];
+var outChar = [5, 2];
+
+function createPietImage(value)
+{
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    //canvas.width = calcImageWidth(value);
+    //canvas.height = 10;
+
+    canvas.width = value.length * 2 + 1 + 1;
+    canvas.height = calcImageHeight(value);
+
+    //rows
+    let hueAt = 0;
+    //columns
+    let darknessAt = 0;
+
+    let pixelAtX = 0;
+    for(let charAt = 0; charAt < value.length; charAt++)
+    {
+        let charCode = value.charCodeAt(charAt);
+
+
+        //write data
+        ctx.fillStyle = colours[hueAt][darknessAt];
+        ctx.fillRect(pixelAtX, 0, 1, charCode);
+
+        //do push operation
+        //1. change colour
+        hueAt += push[0];
+        darknessAt += push[1];
+        //just making sure these values are inside array index
+        hueAt = mod(hueAt, colours.length);
+        darknessAt = mod(darknessAt, colours[0].length);
+        ctx.fillStyle = colours[hueAt][darknessAt];
+        //2. draw pixel
+        pixelAtX++;
+        ctx.fillRect(pixelAtX, 0, 1, charCode);
+
+        //do output operation
+        //1. change colour
+        hueAt += outChar[0];
+        darknessAt += outChar[1];
+        //just making sure these values are inside array index
+        hueAt = mod(hueAt, colours.length);
+        darknessAt = mod(darknessAt, colours[0].length);
+        ctx.fillStyle = colours[hueAt][darknessAt];
+
+        pixelAtX++;
+
+        if(charAt == value.length-1)
+        {
+            ctx.fillRect(pixelAtX, 0, 1, charCode);
+            //pixelAtX++;
+        }
+    }
+
+    ctx.fillStyle = black;
+    ctx.fillRect(pixelAtX, 1, 1, 1);
+    pixelAtX++;
+
+    ctx.fillStyle = black;
+    ctx.fillRect(pixelAtX, 2, 1, 1);
+    pixelAtX++;
+}
+
+function calcImageHeight(value)
+{
+    let max = 1;
+    for(let i = 0; i < value.length; i++)
+    {
+        let charCode = value.charCodeAt(i);
+        if(charCode > max)
+        {  
+            max = charCode;
+        }
+    }
+    return max;
+}
+
+
+function mod(n, m)
+{
+    return ((n % m) + m) % m;
+}
+</script>
